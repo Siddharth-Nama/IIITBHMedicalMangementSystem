@@ -1,8 +1,8 @@
 import axios from 'axios';
-
+import { api } from './config';
 // Set the base URL of your Django backend
 const API = axios.create({
-  baseURL: 'http://localhost:8000/api/', // Update this URL if needed
+  baseURL: api,
 });
 
 // API calls for CRUD operations on medicines
