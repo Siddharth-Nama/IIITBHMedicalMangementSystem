@@ -20,10 +20,12 @@ const StudentList = () => {
   return (
     <div>
       <h1>Student List</h1>
+      
       <ul>
         {students.map((student) => (
           <li key={student.id}>
             {student.name} - {student.roll_number}
+            <p>hi</p>
           </li>
         ))}
       </ul>
