@@ -6,7 +6,7 @@ import MedicineDistributionList from './components/MedicineDistributionList';
 const App = () => {
   return (
     <Router>
-      <div>
+      <div style={mainContentStyles}>
         {/* Navigation Bar */}
         <nav>
           <ul style={navStyles}>
@@ -33,17 +33,36 @@ const App = () => {
           <Route path="/MedicineDistributionList" element={<MedicineDistributionList />} />
         </Routes>
       </div>
+
+      {/* Footer */}
+      <footer style={footerStyles}>
+        <p>
+          Made by{' '}
+          <a
+            href="https://www.linkedin.com/in/siddharth-nama/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={footerLinkStyles}
+          >
+            Siddharth Nama
+          </a>
+        </p>
+      </footer>
     </Router>
   );
 };
 
 /* Inline styles for better customization */
+const mainContentStyles = {
+  minHeight: '100vh', // Ensure the content takes at least the full height of the viewport
+  paddingBottom: '50px', // Add enough space to accommodate the footer at the bottom
+};
+
 const navStyles = {
   display: 'flex',
   justifyContent: 'center',
   gap: '20px',
   listStyleType: 'none',
-  padding: '10px',
   backgroundColor: '#f4f4f4',
   margin: 0,
 };
@@ -57,6 +76,22 @@ const linkStyles = {
 const activeLinkStyles = {
   fontWeight: 'bold',
   color: '#007BFF',
+};
+
+const footerStyles = {
+  position: 'fixed',
+  bottom: '0',
+  left: '0',
+  width: '100%',
+  textAlign: 'center',
+  backgroundColor: '#f4f4f4',
+  fontSize: '16px',
+  zIndex: '10',
+};
+
+const footerLinkStyles = {
+  color: '#007BFF',
+  textDecoration: 'none',
 };
 
 export default App;
