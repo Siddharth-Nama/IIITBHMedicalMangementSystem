@@ -98,46 +98,47 @@ const MedicineList = () => {
       </div>
 
       {/* Medicine List Table */}
-      <h2>Medicine List</h2>
-      <div className="table-responsive">
-        <table className="border-collapse border border-slate-500 table-fixed table-bordered">
-          <thead>
-            <tr>
-            <th className="text-center bg-blue-500 text-white">S. No.</th>
-            <th className="text-center">Medicine Name</th>
-              <th className="text-center">Rate per Unit</th>
-              <th className="text-center">Total Units</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {medicines.length > 0 ? (
-              medicines.map((medicine, index) => (
-                <tr key={medicine.id}>
-                  <td className="text-center">{index + 1}</td>
-                  <td className="text-center">{medicine.name}</td>
-                  <td className="text-center">{medicine.rate_per_unit}</td>
-                  <td className="text-center">{medicine.total_units}</td>
-                  <td className="text-center">
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleEdit(medicine)}
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center">
-                  No medicines found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+<h2>Medicine List</h2>
+<div className="table-responsive">
+  <table className="table-fixed border-collapse w-full">
+    <thead>
+      <tr className="bg-blue-200 text-white">
+        <th className="text-center border-2 border-black p-2">S. No.</th>
+        <th className="text-center border-2 border-black p-2">Medicine Name</th>
+        <th className="text-center border-2 border-black p-2">Rate per Unit</th>
+        <th className="text-center border-2 border-black p-2">Total Units</th>
+        <th className="text-center border-2 border-black p-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {medicines.length > 0 ? (
+        medicines.map((medicine, index) => (
+          <tr key={medicine.id}>
+            <td className="text-center border-2 border-black p-2">{index + 1}</td>
+            <td className="text-center border-2 border-black p-2">{medicine.name}</td>
+            <td className="text-center border-2 border-black p-2">{medicine.rate_per_unit}</td>
+            <td className="text-center border-2 border-black p-2">{medicine.total_units}</td>
+            <td className="text-center border-2 border-black p-2">
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => handleEdit(medicine)}
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="5" className="text-center border-2 border-black p-2">
+            No medicines found.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
     </div>
   );
 };
