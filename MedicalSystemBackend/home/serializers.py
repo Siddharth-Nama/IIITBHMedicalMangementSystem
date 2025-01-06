@@ -12,6 +12,10 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MedicineDistributionSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.name', read_only=True)
+    student_roll_number = serializers.CharField(source='student.roll_number', read_only=True)
+    medicine_name = serializers.CharField(source='medicine.name', read_only=True)
+
     class Meta:
         model = MedicineDistribution
         fields = '__all__'

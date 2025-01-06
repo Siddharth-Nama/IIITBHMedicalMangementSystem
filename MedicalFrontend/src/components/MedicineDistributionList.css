@@ -1,0 +1,85 @@
+/* Style for the container */
+.distribution-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Form container styling */
+  .form-container {
+    margin-bottom: 20px;
+  }
+  
+  select, input, button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
+  
+  select, input {
+    width: 200px;
+  }
+  
+  button {
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  .btn-update {
+    background-color: #f44336;
+  }
+  
+  .btn-update:hover {
+    background-color: #e60000;
+  }
+  
+  .btn-create {
+    background-color: #4CAF50;
+  }
+  
+  .btn-create:hover {
+    background-color: #45a049;
+  }
+  
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  button {
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+  

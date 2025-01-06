@@ -3,6 +3,8 @@ import { fetchMedicines, createMedicine, updateMedicine } from '../api';
 
 const MedicineList = () => {
   const [medicines, setMedicines] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredMedicines, setFilteredMedicines] = useState([]);
   const [newMedicine, setNewMedicine] = useState({
     name: '',
     rate_per_unit: '',
@@ -15,10 +17,19 @@ const MedicineList = () => {
     loadMedicines();
   }, []);
 
+  useEffect(() => {
+    // Filter medicines based on search query
+    const filtered = medicines.filter((medicine) =>
+      medicine.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredMedicines(filtered);
+  }, [searchQuery, medicines]);
+
   const loadMedicines = async () => {
     try {
       const response = await fetchMedicines();
       setMedicines(response.data);
+      setFilteredMedicines(response.data);
     } catch (error) {
       console.error('Error fetching medicines:', error);
     }
@@ -96,49 +107,58 @@ const MedicineList = () => {
           <button onClick={handleCreate}>Add Medicine</button>
         )}
       </div>
+<br /><br />
+      {/* Search Field */}
+      <div>
+        <input
+          type="text"
+          placeholder="Search by Medicine Name"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
       {/* Medicine List Table */}
-<h2>Medicine List</h2>
-<div className="table-responsive">
-  <table className="table-fixed border-collapse w-full">
-    <thead>
-      <tr className="bg-blue-200 text-white">
-        <th className="text-center border-2 border-black p-2">S. No.</th>
-        <th className="text-center border-2 border-black p-2">Medicine Name</th>
-        <th className="text-center border-2 border-black p-2">Rate per Unit</th>
-        <th className="text-center border-2 border-black p-2">Total Units</th>
-        <th className="text-center border-2 border-black p-2">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {medicines.length > 0 ? (
-        medicines.map((medicine, index) => (
-          <tr key={medicine.id}>
-            <td className="text-center border-2 border-black p-2">{index + 1}</td>
-            <td className="text-center border-2 border-black p-2">{medicine.name}</td>
-            <td className="text-center border-2 border-black p-2">{medicine.rate_per_unit}</td>
-            <td className="text-center border-2 border-black p-2">{medicine.total_units}</td>
-            <td className="text-center border-2 border-black p-2">
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => handleEdit(medicine)}
-              >
-                Edit
-              </button>
-            </td>
-          </tr>
-        ))
-      ) : (
-        <tr>
-          <td colSpan="5" className="text-center border-2 border-black p-2">
-            No medicines found.
-          </td>
-        </tr>
-      )}
-    </tbody>
-  </table>
-</div>
-
+      <h2>Medicine List</h2>
+      <div className="table-responsive">
+        <table className="table-fixed border-collapse w-full">
+          <thead>
+            <tr className="bg-blue-200 text-white">
+              <th className="text-center border-2 border-black p-2">S. No.</th>
+              <th className="text-center border-2 border-black p-2">Medicine Name</th>
+              <th className="text-center border-2 border-black p-2">Rate per Unit</th>
+              <th className="text-center border-2 border-black p-2">Total Units</th>
+              <th className="text-center border-2 border-black p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMedicines.length > 0 ? (
+              filteredMedicines.map((medicine, index) => (
+                <tr key={medicine.id}>
+                  <td className="text-center border-2 border-black p-2">{index + 1}</td>
+                  <td className="text-center border-2 border-black p-2">{medicine.name}</td>
+                  <td className="text-center border-2 border-black p-2">{medicine.rate_per_unit}</td>
+                  <td className="text-center border-2 border-black p-2">{medicine.total_units}</td>
+                  <td className="text-center border-2 border-black p-2">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleEdit(medicine)}
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center border-2 border-black p-2">
+                  No medicines found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
