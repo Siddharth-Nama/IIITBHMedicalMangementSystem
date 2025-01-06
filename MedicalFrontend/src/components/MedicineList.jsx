@@ -8,6 +8,7 @@ const MedicineList = () => {
     rate_per_unit: '',
     total_units: '',
   });
+  const [editMedicineId, setEditMedicineId] = useState(null); // ID of the medicine being edited
 
   // Fetch medicines from backend when component mounts
   useEffect(() => {
@@ -34,10 +35,26 @@ const MedicineList = () => {
     }
   };
 
+  // Populate the form for updating a medicine
+  const handleEdit = (medicine) => {
+    setEditMedicineId(medicine.id);
+    setNewMedicine({
+      name: medicine.name,
+      rate_per_unit: medicine.rate_per_unit,
+      total_units: medicine.total_units,
+    });
+  };
+
   // Update an existing medicine
-  const handleUpdate = async (id, updatedMedicine) => {
+  const handleUpdate = async () => {
+    if (!editMedicineId) {
+      alert('No medicine selected for update!');
+      return;
+    }
     try {
-      await updateMedicine(id, updatedMedicine);
+      await updateMedicine(editMedicineId, newMedicine);
+      setNewMedicine({ name: '', rate_per_unit: '', total_units: '' });
+      setEditMedicineId(null); // Reset edit mode
       loadMedicines();
     } catch (error) {
       console.error('Error updating medicine:', error);
@@ -47,8 +64,9 @@ const MedicineList = () => {
   return (
     <div>
       <h1>Medicine Management</h1>
-      <h2>Add New Medicine</h2>
-      {/* Add New Medicine Form */}
+
+      {/* Add or Update Medicine Form */}
+      <h2>{editMedicineId ? 'Update Medicine' : 'Add New Medicine'}</h2>
       <div>
         <input
           type="text"
@@ -72,24 +90,54 @@ const MedicineList = () => {
             setNewMedicine({ ...newMedicine, total_units: e.target.value })
           }
         />
-        <button onClick={handleCreate}>Add Medicine</button>
+        {editMedicineId ? (
+          <button onClick={handleUpdate}>Update Medicine</button>
+        ) : (
+          <button onClick={handleCreate}>Add Medicine</button>
+        )}
       </div>
 
-      {/* Display Medicine List */}
-      <ul>
-        {medicines.map((medicine) => (
-          <li key={medicine.id}>
-            <div>
-              <span>{medicine.name}</span> -{' '}
-              <span>{medicine.rate_per_unit}</span> -{' '}
-              <span>{medicine.total_units}</span>
-            </div>
-            <button onClick={() => handleUpdate(medicine.id, { name: 'Updated Name' })}>
-              Edit
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* Medicine List Table */}
+      <h2>Medicine List</h2>
+      <div className="table-responsive">
+        <table className="border-collapse border border-slate-500 table-fixed table-bordered">
+          <thead>
+            <tr>
+            <th className="text-center bg-blue-500 text-white">S. No.</th>
+            <th className="text-center">Medicine Name</th>
+              <th className="text-center">Rate per Unit</th>
+              <th className="text-center">Total Units</th>
+              <th className="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {medicines.length > 0 ? (
+              medicines.map((medicine, index) => (
+                <tr key={medicine.id}>
+                  <td className="text-center">{index + 1}</td>
+                  <td className="text-center">{medicine.name}</td>
+                  <td className="text-center">{medicine.rate_per_unit}</td>
+                  <td className="text-center">{medicine.total_units}</td>
+                  <td className="text-center">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleEdit(medicine)}
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center">
+                  No medicines found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
