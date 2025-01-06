@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { api } from './config';
-
+const API_URL = api;
 // Set the base URL for the Django backend
 const API = axios.create({
   baseURL: api,
@@ -18,12 +18,15 @@ export const createDistribution = (data) => API.post('/distributions/', data);
 export const updateDistribution = (id, data) => API.put(`/distributions/${id}/`, data);
 
 // Filtered Distributions API
-export const filterDistributions = (filters) => {
-  const { start_date, end_date, roll_number } = filters;
-  const params = new URLSearchParams({ start_date, end_date });
-  if (roll_number) params.append('roll_number', roll_number);
-
-  return API.get(`/distributions/filtered_distributions/?${params.toString()}`);
+export const filterDistributions = async (filters) => {
+  try {
+    const queryParams = new URLSearchParams(filters).toString();
+    const response = await axios.get(`${API_URL}distributions/filtered_distributions/?${queryParams}`);
+    return response;
+  } catch (error) {
+    console.error('Error fetching filtered distributions:', error);
+    throw error;
+  }
 };
 
 // Students API

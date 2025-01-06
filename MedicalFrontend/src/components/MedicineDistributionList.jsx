@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDistributions, createDistribution, updateDistribution } from '../api';
+import { fetchDistributions, filterDistributions } from '../api';
 import './MedicineDistributionList.css';
 
 const MedicineDistributionList = () => {
   const [distributions, setDistributions] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [medicines, setMedicines] = useState([]);
-  const [newDistribution, setNewDistribution] = useState({
-    student_id: '',
-    medicine_id: '',
-    quantity: '',
+  const [filters, setFilters] = useState({
+    start_date: '',
+    end_date: '',
+    roll_number: '',
   });
-  const [editDistributionId, setEditDistributionId] = useState(null);
+  const [filteredResults, setFilteredResults] = useState([]);
 
   useEffect(() => {
     loadDistributions();
-    loadStudents();
-    loadMedicines();
   }, []);
 
   const loadDistributions = async () => {
@@ -28,55 +24,17 @@ const MedicineDistributionList = () => {
     }
   };
 
-  const loadStudents = async () => {
-    try {
-      const response = await fetch('/api/students');
-      setStudents(response.data || []);
-    } catch (error) {
-      console.error('Error fetching students:', error);
-    }
-  };
-
-  const loadMedicines = async () => {
-    try {
-      const response = await fetch('/api/medicines');
-      setMedicines(response.data || []);
-    } catch (error) {
-      console.error('Error fetching medicines:', error);
-    }
-  };
-
-const handleCreate = async () => {
-  try {
-    await createDistribution(newDistribution);
-    setNewDistribution({ student_id: '', medicine_id: '', quantity: '' });
-    loadDistributions();
-  } catch (error) {
-    console.error('Error creating distribution:', error);
-  }
-};
-
-  const handleEdit = (distribution) => {
-    setEditDistributionId(distribution.id);
-    setNewDistribution({
-      student_id: distribution.student_id,
-      medicine_id: distribution.medicine_id,
-      quantity: distribution.quantity,
-    });
-  };
-
-  const handleUpdate = async () => {
-    if (!editDistributionId) {
-      alert('No distribution selected for update!');
+  const handleFilter = async () => {
+    const { start_date, end_date } = filters;
+    if (!start_date || !end_date) {
+      alert('Please select both start and end dates for filtering!');
       return;
     }
     try {
-      await updateDistribution(editDistributionId, newDistribution);
-      setNewDistribution({ student_id: '', medicine_id: '', quantity: '' });
-      setEditDistributionId(null);
-      loadDistributions();
+      const response = await filterDistributions(filters);
+      setFilteredResults(response.data);
     } catch (error) {
-      console.error('Error updating distribution:', error);
+      console.error('Error fetching filtered distributions:', error);
     }
   };
 
@@ -84,57 +42,54 @@ const handleCreate = async () => {
     <div className="distribution-container">
       <h1>Medicine Distribution Management</h1>
 
-      {/* Add or Update Distribution Form */}
-      <h2>{editDistributionId ? 'Update Distribution' : 'Add New Distribution'}</h2>
+      {/* Filter Form */}
+      <h2>Filter Distributions</h2>
       <div className="form-container">
-        <select
-          value={newDistribution.student_id}
-          onChange={(e) =>
-            setNewDistribution({ ...newDistribution, student_id: e.target.value })
-          }
-        >
-          <option value="">Select Student</option>
-          {students.length > 0 ? (
-            students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.name}
-              </option>
-            ))
-          ) : (
-            <option>No students available</option>
-          )}
-        </select>
-        <select
-          value={newDistribution.medicine_id}
-          onChange={(e) =>
-            setNewDistribution({ ...newDistribution, medicine_id: e.target.value })
-          }
-        >
-          <option value="">Select Medicine</option>
-          {medicines.length > 0 ? (
-            medicines.map((medicine) => (
-              <option key={medicine.id} value={medicine.id}>
-                {medicine.name}
-              </option>
-            ))
-          ) : (
-            <option>No medicines available</option>
-          )}
-        </select>
         <input
-          type="number"
-          placeholder="Quantity"
-          value={newDistribution.quantity}
-          onChange={(e) =>
-            setNewDistribution({ ...newDistribution, quantity: e.target.value })
-          }
+          type="date"
+          value={filters.start_date}
+          onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
         />
-        {editDistributionId ? (
-          <button className="btn btn-update" onClick={handleUpdate}>Update Distribution</button>
-        ) : (
-          <button className="btn btn-create" onClick={handleCreate}>Add Distribution</button>
-        )}
+        <input
+          type="date"
+          value={filters.end_date}
+          onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Enter Roll Number (optional)"
+          value={filters.roll_number}
+          onChange={(e) => setFilters({ ...filters, roll_number: e.target.value })}
+        />
+        <button className="btn btn-filter" onClick={handleFilter}>Filter</button>
       </div>
+
+      {/* Filtered Results */}
+      <h2>Filtered Results</h2>
+      {filteredResults.length > 0 ? (
+        <table className="distribution-table">
+          <thead>
+            <tr>
+              <th>S. No.</th>
+              <th>Student Name</th>
+              <th>Roll Number</th>
+              <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredResults.map((result, index) => (
+              <tr key={result.student_roll_number}>
+                <td>{index + 1}</td>
+                <td>{result.student_name}</td>
+                <td>{result.student_roll_number}</td>
+                <td>{result.total_amount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No results found for the selected filter.</p>
+      )}
 
       {/* Distributions List */}
       <h2>Distribution List</h2>
@@ -148,7 +103,6 @@ const handleCreate = async () => {
             <th>Quantity</th>
             <th>Total Amount</th>
             <th>Date</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -162,14 +116,11 @@ const handleCreate = async () => {
                 <td>{dist.quantity}</td>
                 <td>{dist.total_amount}</td>
                 <td>{dist.date}</td>
-                <td>
-                  <button className="btn btn-edit" onClick={() => handleEdit(dist)}>Edit</button>
-                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="8">No distributions found.</td>
+              <td colSpan="7">No distributions found.</td>
             </tr>
           )}
         </tbody>

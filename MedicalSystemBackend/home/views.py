@@ -1,20 +1,18 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Sum, F
+from django.db.models import Sum
 from django.utils.dateparse import parse_date
 from .models import Medicine, Student, MedicineDistribution
-from .serializers import MedicineSerializer, StudentSerializer, MedicineDistributionSerializer
+from .serializers import MedicineSerializer, StudentSerializer, MedicineDistributionSerializer, FilteredDistributionSerializer
 
 class MedicineViewSet(viewsets.ModelViewSet):
     queryset = Medicine.objects.all()
     serializer_class = MedicineSerializer
 
-
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-
 
 class MedicineDistributionViewSet(viewsets.ModelViewSet):
     queryset = MedicineDistribution.objects.all().select_related('student', 'medicine')
@@ -39,39 +37,55 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    
     @action(detail=False, methods=['get'])
     def filtered_distributions(self, request):
-        """Custom action to return aggregated data."""
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        roll_number = request.query_params.get('roll_number')
+     """Custom action to return aggregated data."""
+     start_date = request.query_params.get('start_date')
+     end_date = request.query_params.get('end_date')
+     roll_number = request.query_params.get('roll_number')
 
-        # Validate the required parameters
+    # Validate the required parameters
+     if not start_date or not end_date:
+        return Response({"error": "Both start_date and end_date are required."}, status=400)
+
+    # Parse dates for validation
+     try:
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
         if not start_date or not end_date:
-            return Response({"error": "Both start_date and end_date are required."}, status=400)
+            raise ValueError("Invalid date format.")
+     except ValueError:
+        return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
-        # Parse dates for validation
-        try:
-            start_date = parse_date(start_date)
-            end_date = parse_date(end_date)
-            if not start_date or not end_date:
-                raise ValueError("Invalid date format.")
-        except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+    # Filter distributions
+     queryset = MedicineDistribution.objects.filter(date__range=[start_date, end_date])
 
-        # Filter distributions
-        queryset = MedicineDistribution.objects.filter(date__range=[start_date, end_date])
+     if roll_number:
+        queryset = queryset.filter(student__roll_number=roll_number)
 
-        if roll_number:
-            queryset = queryset.filter(student__roll_number=roll_number)
-
-        # Aggregate data for each student
-        aggregated_data = (
-            queryset.values('student__name', 'student__roll_number')
-            .annotate(
-                total_amount=Sum('total_amount'),
-                total_medicines=Sum('quantity')
-            )
+    # Aggregate data for each student
+     aggregated_data = (
+        queryset.values('student__name', 'student__roll_number')
+        .annotate(
+            total_amount=Sum('total_amount'),
+            total_medicines=Sum('quantity')
         )
+        .order_by('student__roll_number')  # Optional: ordering the data
+     )
 
-        return Response(aggregated_data)
+    # Adjust the dictionary keys to match the serializer's field names
+     adjusted_data = []
+     for item in aggregated_data:
+        adjusted_data.append({
+            'student_name': item['student__name'],
+            'student_roll_number': item['student__roll_number'],
+            'total_amount': item['total_amount'],
+            'total_medicines': item['total_medicines'],
+        })
+
+    # Now, pass the adjusted data to the serializer
+     serializer = FilteredDistributionSerializer(adjusted_data, many=True)
+    
+     return Response(serializer.data)
+
