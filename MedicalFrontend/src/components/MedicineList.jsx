@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchMedicines, createMedicine, updateMedicine, deleteMedicine } from '../api';
+import { fetchMedicines, createMedicine, updateMedicine } from '../api';
 
 const MedicineList = () => {
   const [medicines, setMedicines] = useState([]);
@@ -44,20 +44,10 @@ const MedicineList = () => {
     }
   };
 
-  // Delete a medicine
-  const handleDelete = async (id) => {
-    try {
-      await deleteMedicine(id);
-      loadMedicines();
-    } catch (error) {
-      console.error('Error deleting medicine:', error);
-    }
-  };
-
   return (
     <div>
       <h1>Medicine Management</h1>
-
+      <h2>Add New Medicine</h2>
       {/* Add New Medicine Form */}
       <div>
         <input
@@ -97,7 +87,6 @@ const MedicineList = () => {
             <button onClick={() => handleUpdate(medicine.id, { name: 'Updated Name' })}>
               Edit
             </button>
-            <button onClick={() => handleDelete(medicine.id)}>Delete</button>
           </li>
         ))}
       </ul>
