@@ -78,21 +78,23 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
         end_date = request.query_params.get("end_date")
         roll_number = request.query_params.get("roll_number")
 
-        # Validate the required parameters
-        if not start_date or not end_date:
-            return Response({"error": "Both start_date and end_date are required."}, status=400)
+        # # Validate the required parameters
+        # if not start_date or not end_date:
+        #     return Response({"error": "Both start_date and end_date are required."}, status=400)
 
         # Parse dates for validation
-        try:
-            start_date = parse_date(start_date)
-            end_date = parse_date(end_date)
-            if not start_date or not end_date:
-                raise ValueError("Invalid date format.")
-        except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+        # try:
+        #     start_date = parse_date(start_date)
+        #     end_date = parse_date(end_date)
+        #     if not start_date or not end_date:
+        #         raise ValueError("Invalid date format.")
+        # except ValueError:
+        #     return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
         # Filter distributions
-        queryset = MedicineDistribution.objects.filter(date__range=[start_date, end_date])
+        queryset = MedicineDistribution.objects.all()
+        if  start_date or  end_date:
+            queryset = queryset.filter(date__range=[start_date, end_date])
 
         if roll_number:
             queryset = queryset.filter(student__roll_number__icontains=roll_number)
