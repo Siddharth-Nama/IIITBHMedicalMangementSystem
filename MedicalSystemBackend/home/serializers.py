@@ -73,9 +73,9 @@ class MedicineDistributionSerializer(serializers.ModelSerializer):
 
 
 class FilteredDistributionSerializer(serializers.Serializer):
-    student_name = serializers.CharField()
-    student_roll_number = serializers.CharField()
-    total_amount = serializers.DecimalField(max_digits=15, decimal_places=2)
+    student__name = serializers.CharField(source="student_name")
+    student__roll_number = serializers.CharField(source="student_roll_number")
+    total_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
     total_medicines = serializers.IntegerField()
 
 
