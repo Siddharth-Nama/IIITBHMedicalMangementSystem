@@ -9,4 +9,11 @@ router.register('distributions', MedicineDistributionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+
+    # Adding the custom search actions for both Medicine and Student viewsets
+    path('medicines/search/', MedicineViewSet.as_view({'get': 'search'}), name='medicine-search'),
+    path('students/search/', StudentViewSet.as_view({'get': 'search'}), name='student-search'),
+
+    # Adding the custom action for filtered distributions
+    path('distributions/filtered/', MedicineDistributionViewSet.as_view({'get': 'filtered_distributions'}), name='filtered-distributions'),
 ]
