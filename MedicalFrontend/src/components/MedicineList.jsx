@@ -53,6 +53,7 @@ const MedicineList = () => {
       name: medicine.name,
       rate_per_unit: medicine.rate_per_unit,
       total_units: medicine.total_units,
+      date:medicine.date,
     });
   };
 
@@ -64,7 +65,7 @@ const MedicineList = () => {
     }
     try {
       await updateMedicine(editMedicineId, newMedicine);
-      setNewMedicine({ name: '', rate_per_unit: '', total_units: '' });
+      setNewMedicine({ name: '', rate_per_unit: '', total_units: '', date : '' });
       setEditMedicineId(null); // Reset edit mode
       loadMedicines();
     } catch (error) {
@@ -128,6 +129,7 @@ const MedicineList = () => {
               <th className="text-center border-2 border-black p-2">Medicine Name</th>
               <th className="text-center border-2 border-black p-2">Rate per Unit</th>
               <th className="text-center border-2 border-black p-2">Total Units</th>
+              <th className="text-center border-2 border-black p-2">Last Updated</th>
               <th className="text-center border-2 border-black p-2">Actions</th>
             </tr>
           </thead>
@@ -139,6 +141,7 @@ const MedicineList = () => {
                   <td className="text-center border-2 border-black p-2">{medicine.name}</td>
                   <td className="text-center border-2 border-black p-2">{medicine.rate_per_unit}</td>
                   <td className="text-center border-2 border-black p-2">{medicine.total_units}</td>
+                  <td className="text-center border-2 border-black p-2">{medicine.date}</td>
                   <td className="text-center border-2 border-black p-2">
                     <button
                       className="btn btn-primary btn-sm"

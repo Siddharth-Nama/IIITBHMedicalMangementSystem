@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
 import MedicineList from './components/MedicineList';
 import MedicineDistributionList from './components/MedicineDistributionList';
-
 const App = () => {
   return (
     <Router>
@@ -23,6 +22,9 @@ const App = () => {
               >
                 Students Distribution
               </NavLink>
+            </li>
+            <li>
+              <a style={linkStyles} href="http://127.0.0.1:8000/admin/">Admin</a>
             </li>
           </ul>
         </nav>

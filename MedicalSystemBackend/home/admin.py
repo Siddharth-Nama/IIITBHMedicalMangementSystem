@@ -3,7 +3,7 @@ from .models import Medicine, Student, MedicineDistribution
 
 # Customizing the display of Medicine model in the admin interface
 class MedicineAdmin(admin.ModelAdmin):
-    list_display = ('name', 'rate_per_unit', 'total_units', 'total_rate')
+    list_display = ('name', 'rate_per_unit', 'total_units', 'total_rate','date')
     search_fields = ('name',)
     list_filter = ('rate_per_unit',)
     ordering = ('name',)

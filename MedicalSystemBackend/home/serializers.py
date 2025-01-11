@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from .models import Medicine, Student, MedicineDistribution
+import datetime
 
 
 class MedicineSerializer(serializers.ModelSerializer):
+    date = serializers.SerializerMethodField()
     class Meta:
         model = Medicine
         fields = ['id', 'name', 'rate_per_unit', 'total_units', 'total_rate', 'date']
+    
+    def get_date(self, obj):
+        if isinstance(obj.date, datetime.datetime):  # If it's a datetime
+            return obj.date.date()  # Extract only the date
+        return obj.date  # If it's already a date, return it as is
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -55,9 +62,6 @@ class MedicineDistributionSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        """
-        Adjust the stock of the medicine upon distribution creation.
-        """
         medicine = validated_data['medicine']
         quantity = validated_data['quantity']
         
@@ -69,9 +73,6 @@ class MedicineDistributionSerializer(serializers.ModelSerializer):
 
 
 class FilteredDistributionSerializer(serializers.Serializer):
-    """
-    Serializer for filtered distribution results.
-    """
     student_name = serializers.CharField()
     student_roll_number = serializers.CharField()
     total_amount = serializers.DecimalField(max_digits=15, decimal_places=2)

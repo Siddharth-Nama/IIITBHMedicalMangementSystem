@@ -9,6 +9,10 @@ class Medicine(models.Model):
     date = models.DateField(auto_now_add=True)
     def save(self, *args, **kwargs):
         self.total_rate = self.rate_per_unit * self.total_units
+
+        # If this is an update, change the date to the current time
+        if self.pk:  # Check if the object already exists
+            self.date = timezone.now()
         super().save(*args, **kwargs)
 
     def __str__(self):
