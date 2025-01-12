@@ -23,7 +23,7 @@ export const updateDistribution = (id, data) => API.put(`/distributions/${id}/`,
 export const filterDistributions = async (filters) => {
   try {
     const queryParams = new URLSearchParams(filters).toString();
-    const response = await axios.get(`${API_URL}distributions/filtered/?${queryParams}`);
+    const response = await axios.get(`${API_URL}distributions/filtered_distributions/?${queryParams}`);
     return response;
   } catch (error) {
     console.error('Error fetching filtered distributions:', error);

@@ -1,18 +1,11 @@
 from rest_framework import serializers
 from .models import Medicine, Student, MedicineDistribution
-import datetime
 
 
 class MedicineSerializer(serializers.ModelSerializer):
-    date = serializers.SerializerMethodField()
     class Meta:
         model = Medicine
         fields = ['id', 'name', 'rate_per_unit', 'total_units', 'total_rate', 'date']
-    
-    def get_date(self, obj):
-        if isinstance(obj.date, datetime.datetime):  # If it's a datetime
-            return obj.date.date()  # Extract only the date
-        return obj.date  # If it's already a date, return it as is
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -32,50 +25,37 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class MedicineDistributionSerializer(serializers.ModelSerializer):
-    student_name = serializers.CharField(source='student.name', read_only=True)
-    student_roll_number = serializers.CharField(source='student.roll_number', read_only=True)
-    medicine_name = serializers.CharField(source='medicine.name', read_only=True)
+    from rest_framework import serializers
+from .models import MedicineDistribution
 
+class MedicineDistributionSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineDistribution
-        fields = [
-            'id', 
-            'student', 
-            'medicine', 
-            'quantity', 
-            'total_amount', 
-            'date', 
-            'student_name', 
-            'student_roll_number', 
-            'medicine_name',
-        ]
+        fields = '__all__'
+        read_only_fields = ['total_amount']  # Ensure `total_amount` is not editable
 
     def validate(self, data):
         """
-        Ensure that the quantity requested does not exceed the available stock.
+        Validate that the requested quantity does not exceed available medicine units.
         """
         medicine = data['medicine']
-        if data['quantity'] > medicine.total_units:
-            raise serializers.ValidationError(
-                f"Requested quantity ({data['quantity']}) exceeds available stock ({medicine.total_units})."
-            )
-        return data
+        quantity = data['quantity']
 
-    def create(self, validated_data):
-        medicine = validated_data['medicine']
-        quantity = validated_data['quantity']
-        
-        # Deduct the distributed quantity from total stock
-        medicine.total_units -= quantity
-        medicine.save()
-        
-        return super().create(validated_data)
+        if medicine.total_units < quantity:
+            raise serializers.ValidationError({
+                'quantity': f"Only {medicine.total_units} units of {medicine.name} are available."
+            })
+
+        return data
 
 
 class FilteredDistributionSerializer(serializers.Serializer):
-    student__name = serializers.CharField(source="student_name")
-    student__roll_number = serializers.CharField(source="student_roll_number")
-    total_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    """
+    Serializer for filtered distribution results.
+    """
+    student_name = serializers.CharField()
+    student_roll_number = serializers.CharField()
+    total_amount = serializers.DecimalField(max_digits=15, decimal_places=2)
     total_medicines = serializers.IntegerField()
 
 

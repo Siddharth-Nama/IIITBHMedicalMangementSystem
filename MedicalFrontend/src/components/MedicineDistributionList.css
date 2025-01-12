@@ -82,4 +82,24 @@
   button:hover {
     opacity: 0.8;
   }
+  .medicine-suggestions {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    position: absolute;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 1;
+  }
   
+  .medicine-suggestions li {
+    padding: 8px;
+    cursor: pointer;
+  }
+  
+  .medicine-suggestions li:hover {
+    background-color: #f0f0f0;
+  }

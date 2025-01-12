@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Sum
@@ -45,58 +45,53 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 
 class MedicineDistributionViewSet(viewsets.ModelViewSet):
-    queryset = MedicineDistribution.objects.all().select_related("student", "medicine")
+    queryset = MedicineDistribution.objects.all()
     serializer_class = MedicineDistributionSerializer
 
-    def get_queryset(self):
-        
-        queryset = super().get_queryset()
+    def perform_create(self, serializer):
+        """
+        Override perform_create to handle stock deduction when creating a record.
+        """
+        medicine = serializer.validated_data['medicine']
+        quantity = serializer.validated_data['quantity']
 
+        if medicine.total_units < quantity:
+            raise ValueError(f"Insufficient stock for medicine {medicine.name}.")
+        
+        # Deduct quantity from medicine stock
+        medicine.total_units -= quantity
+        medicine.save()
+
+        serializer.save()
+        
+    def get_queryset(self):
+        # Existing functionality for filtering queryset
+        queryset = super().get_queryset()
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
         roll_number = self.request.query_params.get("roll_number")
 
-        # Filter by date range
         if start_date and end_date:
             queryset = queryset.filter(date__range=[start_date, end_date])
 
-        # Filter by roll number
         if roll_number:
             queryset = queryset.filter(student__roll_number__icontains=roll_number)
-
         return queryset
 
     @action(detail=False, methods=["get"])
     def filtered_distributions(self, request):
-        """
-        Custom action to return aggregated data for filtering distributions.
-        """
+        # Existing functionality for filtered distributions
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         roll_number = request.query_params.get("roll_number")
 
-        # # Validate the required parameters
-        # if not start_date or not end_date:
-        #     return Response({"error": "Both start_date and end_date are required."}, status=400)
-
-        # Parse dates for validation
-        # try:
-        #     start_date = parse_date(start_date)
-        #     end_date = parse_date(end_date)
-        #     if not start_date or not end_date:
-        #         raise ValueError("Invalid date format.")
-        # except ValueError:
-        #     return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
-
-        # Filter distributions
         queryset = MedicineDistribution.objects.all()
-        if  start_date or  end_date:
+        if start_date and end_date:
             queryset = queryset.filter(date__range=[start_date, end_date])
 
         if roll_number:
             queryset = queryset.filter(student__roll_number__icontains=roll_number)
 
-        # Aggregate data for each student
         aggregated_data = (
             queryset.values("student__name", "student__roll_number")
             .annotate(
@@ -106,7 +101,6 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
             .order_by("student__roll_number")
         )
 
-        # Adjust the dictionary keys to match the serializer's field names
         adjusted_data = [
             {
                 "student_name": item["student__name"],
@@ -117,6 +111,5 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
             for item in aggregated_data
         ]
 
-        # Serialize and return data
         serializer = FilteredDistributionSerializer(adjusted_data, many=True)
         return Response(serializer.data)
