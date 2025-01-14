@@ -116,7 +116,7 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
             "total_amount",
             "date",
         )
-        .order_by("student__roll_number", "medicine__name")
+        .order_by("-date")
      )
 
     # Organizing data for the frontend

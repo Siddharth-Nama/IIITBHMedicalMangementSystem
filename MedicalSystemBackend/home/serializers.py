@@ -1,12 +1,23 @@
 from rest_framework import serializers
 from .models import Medicine, Student, MedicineDistribution
-
+import datetime
 
 class MedicineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = ['id', 'name', 'rate_per_unit', 'total_units', 'total_rate', 'date']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Ensure `date` is serialized as a date
+        if instance.date and isinstance(instance.date, datetime.datetime):
+            representation['date'] = instance.date.date()
+        return representation
 
+    def validate_date(self, value):
+        if isinstance(value, datetime.datetime):
+            return value.date()  # Convert to date
+        return value
 
 class StudentSerializer(serializers.ModelSerializer):
     total_bill = serializers.SerializerMethodField()

@@ -60,16 +60,21 @@ const MedicineList = () => {
   // Update an existing medicine
   const handleUpdate = async () => {
     if (!editMedicineId) {
-      alert('No medicine selected for update!');
+      alert("No medicine selected for update!");
       return;
     }
+  
+    // Get the current date in "YYYY-MM-DD" format
+    const today = new Date().toISOString().split("T")[0];
+    console.log('---------today---------',today);
     try {
-      await updateMedicine(editMedicineId, newMedicine);
-      setNewMedicine({ name: '', rate_per_unit: '', total_units: '', date : '' });
+      await updateMedicine(editMedicineId, { ...newMedicine, date: today });
+      setNewMedicine({ name: "", rate_per_unit: "", total_units: "", date: "" });
       setEditMedicineId(null); // Reset edit mode
-      loadMedicines();
+      loadMedicines(); // Reload medicines without refreshing the page
     } catch (error) {
-      console.error('Error updating medicine:', error);
+      console.error("Error updating medicine:", error);
+      alert("Failed to update medicine. Please try again.");
     }
   };
 
@@ -79,6 +84,7 @@ const MedicineList = () => {
 
       {/* Add or Update Medicine Form */}
       <h2>{editMedicineId ? 'Update Medicine' : 'Add New Medicine'}</h2>
+      
       <div>
         <input
           type="text"

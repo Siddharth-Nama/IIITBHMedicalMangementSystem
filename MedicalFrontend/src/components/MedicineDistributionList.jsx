@@ -363,11 +363,12 @@ const MedicineDistributionList = () => {
                 <td>{index + 1}</td>
                 <td>{result.student_name}</td>
                 <td>{result.student_roll_number}</td>
+                
+                <td>{result.total_amount}</td>
                 <td>
                   {result.medicines.map((med) => med.medicine_name).join(", ")}
                 </td>
 
-                <td>{result.total_amount}</td>
                 <td>
                   <button
                     className="btn btn-primary btn-sm"

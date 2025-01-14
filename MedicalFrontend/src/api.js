@@ -9,7 +9,15 @@ const API = axios.create({
 });
 
 // Medicines API
-export const fetchMedicines = () => API.get('/medicines/');
+export const fetchMedicines = async () => {
+  const response = await API.get('/medicines/');
+  const data = response.data;
+
+  // Sort the medicines by date in descending order (newest first)
+  data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return response;
+};
 export const createMedicine = (data) => API.post('/medicines/', data);
 export const updateMedicine = (id, data) => API.put(`/medicines/${id}/`, data);
 export const deleteMedicine = (id) => API.delete(`/medicines/${id}/`);
