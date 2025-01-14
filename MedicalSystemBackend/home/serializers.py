@@ -50,13 +50,16 @@ class MedicineDistributionSerializer(serializers.ModelSerializer):
 
 
 class FilteredDistributionSerializer(serializers.Serializer):
-    """
-    Serializer for filtered distribution results.
-    """
     student_name = serializers.CharField()
     student_roll_number = serializers.CharField()
     total_amount = serializers.DecimalField(max_digits=15, decimal_places=2)
     total_medicines = serializers.IntegerField()
+    medicines = serializers.ListField(
+        child=serializers.DictField()
+    )
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+
 
 
 class StudentSearchSerializer(serializers.ModelSerializer):

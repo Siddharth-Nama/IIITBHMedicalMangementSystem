@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 import {
   fetchDistributions,
   filterDistributions,
@@ -29,6 +32,21 @@ const MedicineDistributionList = () => {
   const [studentSuggestions, setStudentSuggestions] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const [searchRollNumber, setSearchRollNumber] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+
+  const handleSearchDate = (e) => {
+    const value = e.target.value;
+    setSearchDate(value);
+
+    if (value) {
+      const filteredByDate = distributions.filter((dist) =>
+        dist.date.includes(value)
+      );
+      setFilteredResults(filteredByDate);
+    } else {
+      setFilteredResults(distributions); // Reset to all distributions if no date is entered
+    }
+  };
 
   useEffect(() => {
     loadDistributions();
@@ -47,6 +65,10 @@ const MedicineDistributionList = () => {
     try {
       const response = await filterDistributions(filters);
       setFilteredResults(response.data);
+      console.log(
+        "-------------------response-----------------",
+        response.data
+      );
     } catch (error) {
       console.error("Error fetching filtered distributions:", error);
     }
@@ -92,7 +114,6 @@ const MedicineDistributionList = () => {
 
   const handleNewEntrySubmit = async () => {
     const { roll_number, medicine_name, quantity, date } = newEntry;
-    console.log("------------> ", newEntry);
     // Validate inputs
     if (!roll_number || !medicine_name || !quantity || !date) {
       alert("Please fill in all fields for the new entry.");
@@ -107,16 +128,14 @@ const MedicineDistributionList = () => {
 
     try {
       // Fetch students and medicines
-    const studentsResponse = await fetchStudents();
-    const medicinesResponse = await fetchMedicines();
+      const studentsResponse = await fetchStudents();
+      const medicinesResponse = await fetchMedicines();
 
-    // Extract the data array
-    const students = studentsResponse.data;
-    const medicines = medicinesResponse.data;
+      // Extract the data array
+      const students = studentsResponse.data;
+      const medicines = medicinesResponse.data;
 
-    // Debugging: Check what students and medicines contain
-    console.log("Fetched students-----------------:", students);
-    console.log("Fetched medicines------------:", medicines);
+      // Debugging: Check what students and medicines contain
 
       // Find the student and medicine based on the provided identifiers
       const student1 = students.find(
@@ -142,7 +161,6 @@ const MedicineDistributionList = () => {
         total_amount: quantity * 10, // Replace 10 with the actual rate calculation logic
         date,
       };
-      console.log('----------------NewData-----------------', newData);
       // Submit the new entry
       await createDistribution(newData);
 
@@ -172,12 +190,12 @@ const MedicineDistributionList = () => {
   const handleSearchChange = (e) => {
     setSearchRollNumber(e.target.value);
   };
-  
+
   // const studentsResponse =  fetchStudents();
   // const medicinesResponse =  fetchMedicines();
 
   //   // Extract the data array
-    console.log('-------------------dist-----------------', distributions);
+
   // const students = studentsResponse.data;
   // const medicines = medicinesResponse.data;
   // const student = students.find((student) => student.id === distributions.student);
@@ -211,7 +229,6 @@ const MedicineDistributionList = () => {
   // Helper function to get student name by student id
   const getStudentNameById = (studentId) => {
     const student = students.find((stu) => stu.id === studentId);
-    console.log('-------------------student-----------------', student);
     return student ? student.name : "Unknown";
   };
 
@@ -224,8 +241,73 @@ const MedicineDistributionList = () => {
   // Helper function to get student roll number by student id
   const getStudentRollNumberById = (studentId) => {
     const student = students.find((stu) => stu.id === studentId);
-    console.log('-------------------student-----------------', student);
     return student ? student.roll_number : "Unknown";
+  };
+
+  const handleEdit = (result) => {
+    const {
+      student_name,
+      student_roll_number,
+      medicines,
+      total_amount,
+      total_medicines,
+      start_date,
+      end_date,
+    } = result;
+
+    // Initialize jsPDF
+    const doc = new jsPDF();
+
+    // College Name (Centered at the top)
+    doc.setFontSize(16);
+    doc.text(
+      "Indian Institute of Information Technology",
+      105,
+      10,
+      null,
+      null,
+      "center"
+    );
+
+    // Add Date Range
+    const formattedDateRange =
+      result.start_date === result.end_date
+        ? `Date: ${result.start_date}`
+        : `Date Range: ${result.start_date} - ${result.end_date}`;
+    doc.setFontSize(12);
+    doc.text(formattedDateRange, 10, 20);
+
+    // Add Student Info
+    doc.text(`Student Name: ${student_name}`, 10, 30);
+    doc.text(`Student Roll Number: ${student_roll_number}`, 10, 40);
+
+    // Add Medicines Table
+    const tableData = medicines.map((medicine, index) => [
+      index + 1,
+      medicine.medicine_name,
+      medicine.rate_per_unit.toFixed(2),
+      medicine.quantity,
+      medicine.total_amount.toFixed(2),
+    ]);
+
+    doc.autoTable({
+      startY: 50,
+      head: [["#", "Medicine Name", "Per Unit Cost", "Quantity", "Total Cost"]],
+      body: tableData,
+      theme: "grid",
+    });
+
+    // Add Summary at the Bottom
+    const finalY = doc.lastAutoTable.finalY || 50;
+    doc.text(`Total Medicines: ${total_medicines}`, 10, finalY + 10);
+    doc.text(`Total Amount: ${total_amount} Rupees`, 10, finalY + 20);
+
+    // Add Signature Section
+    doc.text("Signature of Concerned Authority:", 10, finalY + 40);
+
+    // Save the PDF
+    const fileName = `${student_name}_${student_roll_number}.pdf`;
+    doc.save(fileName);
   };
 
   return (
@@ -237,7 +319,7 @@ const MedicineDistributionList = () => {
       <div className="form-container">
         <input
           type="text"
-          placeholder="Enter Roll Number"
+          placeholder="Enter Roll Number (Optional)"
           value={filters.roll_number}
           onChange={(e) =>
             setFilters({ ...filters, roll_number: e.target.value })
@@ -271,6 +353,8 @@ const MedicineDistributionList = () => {
               <th>Student Name</th>
               <th>Roll Number</th>
               <th>Total Amount</th>
+              <th>Medicines</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -279,7 +363,19 @@ const MedicineDistributionList = () => {
                 <td>{index + 1}</td>
                 <td>{result.student_name}</td>
                 <td>{result.student_roll_number}</td>
+                <td>
+                  {result.medicines.map((med) => med.medicine_name).join(", ")}
+                </td>
+
                 <td>{result.total_amount}</td>
+                <td>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleEdit(result)}
+                  >
+                    Edit
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -360,10 +456,10 @@ const MedicineDistributionList = () => {
         onChange={handleSearchChange}
       />
       <input
-        type="text"
+        type="date"
         placeholder="Search by date"
         value={searchDate}
-        onChange={handleSearchChange}
+        onChange={handleSearchDate}
       />
 
       {/* Distribution List */}
@@ -381,12 +477,13 @@ const MedicineDistributionList = () => {
           </tr>
         </thead>
         <tbody>
-        {distributions.length > 0 ? (
+          {distributions.length > 0 ? (
             distributions.map((dist, index) => (
               <tr key={dist.id}>
                 <td>{index + 1}</td>
                 <td>{getStudentNameById(dist.student)}</td>
-                <td>{getStudentRollNumberById(dist.student)}</td> {/* Replace with actual roll number */}
+                <td>{getStudentRollNumberById(dist.student)}</td>{" "}
+                {/* Replace with actual roll number */}
                 <td>{getMedicineNameById(dist.medicine)}</td>
                 <td>{dist.quantity}</td>
                 <td>{dist.total_amount}</td>

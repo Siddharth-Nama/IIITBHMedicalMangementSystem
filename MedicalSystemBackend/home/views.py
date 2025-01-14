@@ -80,36 +80,74 @@ class MedicineDistributionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def filtered_distributions(self, request):
-        # Existing functionality for filtered distributions
-        start_date = request.query_params.get("start_date")
-        end_date = request.query_params.get("end_date")
-        roll_number = request.query_params.get("roll_number")
+     start_date = request.query_params.get("start_date")
+     end_date = request.query_params.get("end_date")
+     roll_number = request.query_params.get("roll_number")
 
-        queryset = MedicineDistribution.objects.all()
-        if start_date and end_date:
-            queryset = queryset.filter(date__range=[start_date, end_date])
+    # Parse and validate dates
+     try:
+        start_date = parse_date(start_date) if start_date else None
+        end_date = parse_date(end_date) if end_date else None
+     except ValueError:
+        return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if roll_number:
-            queryset = queryset.filter(student__roll_number__icontains=roll_number)
+     queryset = MedicineDistribution.objects.all()
 
-        aggregated_data = (
-            queryset.values("student__name", "student__roll_number")
-            .annotate(
-                total_amount=Sum("total_amount"),
-                total_medicines=Sum("quantity"),
-            )
-            .order_by("student__roll_number")
+    # Apply date filtering
+     if start_date and end_date:
+        queryset = queryset.filter(date__range=[start_date, end_date])
+     elif start_date:
+        queryset = queryset.filter(date__gte=start_date)
+     elif end_date:
+        queryset = queryset.filter(date__lte=end_date)
+
+    # Apply roll number filtering
+     if roll_number:
+        queryset = queryset.filter(student__roll_number__icontains=roll_number)
+
+    # Aggregating data by student and including medicine details
+     aggregated_data = (
+        queryset.values(
+            "student__name",
+            "student__roll_number",
+            "medicine__name",
+            "medicine__rate_per_unit",
+            "quantity",
+            "total_amount",
+            "date",
         )
+        .order_by("student__roll_number", "medicine__name")
+     )
 
-        adjusted_data = [
-            {
+    # Organizing data for the frontend
+     student_data = {}
+     for item in aggregated_data:
+        roll_number = item["student__roll_number"]
+        if roll_number not in student_data:
+            student_data[roll_number] = {
                 "student_name": item["student__name"],
-                "student_roll_number": item["student__roll_number"],
-                "total_amount": item["total_amount"],
-                "total_medicines": item["total_medicines"],
+                "student_roll_number": roll_number,
+                "total_amount": 0,
+                "total_medicines": 0,
+                "medicines": [],
+                "start_date": start_date.isoformat() if start_date else None,
+                "end_date": end_date.isoformat() if end_date else None,
             }
-            for item in aggregated_data
-        ]
 
-        serializer = FilteredDistributionSerializer(adjusted_data, many=True)
-        return Response(serializer.data)
+        # Add medicine details
+        student_data[roll_number]["medicines"].append({
+            "medicine_name": item["medicine__name"],
+            "rate_per_unit": float(item["medicine__rate_per_unit"]),
+            "quantity": item["quantity"],
+            "total_amount": float(item["total_amount"]),
+        })
+
+        # Update totals for the student
+        student_data[roll_number]["total_amount"] += float(item["total_amount"])
+        student_data[roll_number]["total_medicines"] += item["quantity"]
+
+    # Convert to a list for serialization
+     adjusted_data = list(student_data.values())
+
+     serializer = FilteredDistributionSerializer(adjusted_data, many=True)
+     return Response(serializer.data)
