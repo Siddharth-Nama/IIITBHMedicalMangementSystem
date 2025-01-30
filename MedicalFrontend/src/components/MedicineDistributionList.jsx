@@ -164,7 +164,7 @@ const MedicineDistributionList = () => {
       // Submit the new entry
       await createDistribution(newData);
 
-      alert("New distribution successfully added!");
+
 
       // Reload distributions and reset form
       loadDistributions();
@@ -374,7 +374,7 @@ const MedicineDistributionList = () => {
                     className="btn btn-primary btn-sm"
                     onClick={() => handleEdit(result)}
                   >
-                    Edit
+                    Download
                   </button>
                 </td>
               </tr>
@@ -448,21 +448,7 @@ const MedicineDistributionList = () => {
         </button>
       </div>
 
-      {/* Search Roll Number */}
-      <h2>Search in List</h2>
-      <input
-        type="text"
-        placeholder="Search by Roll Number"
-        value={searchRollNumber}
-        onChange={handleSearchChange}
-      />
-      <input
-        type="date"
-        placeholder="Search by date"
-        value={searchDate}
-        onChange={handleSearchDate}
-      />
-
+      
       {/* Distribution List */}
       <h2>Distribution List</h2>
       <table className="distribution-table">

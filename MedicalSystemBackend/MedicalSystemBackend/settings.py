@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+import environ
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-h6sllp_roo_hj11u48$$kb9ymqgdfouh%w4b!dmm48=xk9klon'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -82,13 +85,14 @@ WSGI_APPLICATION = 'MedicalSystemBackend.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "medicaldb",
-        "USER": "siddharth",
-        "PASSWORD": "Siddharth@123",
-        "HOST": "127.0.0.1",
-        "PORT": "5433",
+        "NAME":env('DATABASE_NAME'),
+        "USER": env('DATABASE_USER'),
+        "PASSWORD": env('DATABASE_PASSWORD'),
+        "HOST": env('DATABASE_HOST'),
+        "PORT": env('DATABASE_PORT'),
     }
 }
+
 
 
 # Password validation

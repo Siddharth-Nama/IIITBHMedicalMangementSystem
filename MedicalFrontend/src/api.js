@@ -23,7 +23,16 @@ export const updateMedicine = (id, data) => API.put(`/medicines/${id}/`, data);
 export const deleteMedicine = (id) => API.delete(`/medicines/${id}/`);
 
 // Medicine Distribution API
-export const fetchDistributions = () => API.get('/distributions/');
+export const fetchDistributions = async() => {
+  const response = await API.get('/distributions/');
+  const data = response.data;
+
+  // Sort the medicines by date in descending order (newest first)
+  data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return response;
+};
+
 export const createDistribution = (data) => API.post('/distributions/', data);
 export const updateDistribution = (id, data) => API.put(`/distributions/${id}/`, data);
 
