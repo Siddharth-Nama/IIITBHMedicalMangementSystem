@@ -22,15 +22,14 @@ class Medicine(models.Model):
 class Student(models.Model):
     name = models.CharField(max_length=255)
     roll_number = models.CharField(max_length=50, unique=True)
-    student_phone_number = models.CharField(max_length=15)
-    blood_group = models.CharField(max_length=10)
+    
     def __str__(self):
         return self.name
 
 
 class MedicineDistribution(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    medicine = models.TextField()
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, editable=False)
     date = models.DateField(default=timezone.now)
