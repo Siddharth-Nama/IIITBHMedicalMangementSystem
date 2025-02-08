@@ -36,28 +36,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class MedicineDistributionSerializer(serializers.ModelSerializer):
-    from rest_framework import serializers
-from .models import MedicineDistribution
-
-class MedicineDistributionSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineDistribution
         fields = '__all__'
-        read_only_fields = ['total_amount']  # Ensure `total_amount` is not editable
-
-    def validate(self, data):
-        """
-        Validate that the requested quantity does not exceed available medicine units.
-        """
-        medicine = data['medicine']
-        quantity = data['quantity']
-
-        if medicine.total_units < quantity:
-            raise serializers.ValidationError({
-                'quantity': f"Only {medicine.total_units} units of {medicine.name} are available."
-            })
-
-        return data
+        read_only_fields = ['total_amount']  
 
 
 class FilteredDistributionSerializer(serializers.Serializer):

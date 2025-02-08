@@ -387,6 +387,7 @@ const MedicineDistributionList = () => {
 
       {/* New Entry Form */}
       <h2>Add New Distribution</h2>
+      {/* <button onClick={handleEdit} className="">Add new</button> */}
       <div className="form-container">
         <input
           type="text"
@@ -434,22 +435,21 @@ const MedicineDistributionList = () => {
             setNewEntry({
               ...newEntry,
               quantity: e.target.value,
-              total_amount: e.target.value * 10, // Replace 10 with the actual rate logic
-            })
-          }
-        />
-        <input
-          type="date"
-          value={newEntry.date}
-          onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })}
-        />
-        <button className="btn btn-add" onClick={handleNewEntrySubmit}>
-          Add Distribution
-        </button>
-      </div>
-
-      
-      {/* Distribution List */}
+              // Replace 10 with the actual rate logic
+                    })
+                    }
+                  />
+                  <input
+                    type="date"
+                    value={newEntry.date || new Date().toISOString().split('T')[0]}
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })}
+                  />
+                  <button className="btn btn-add" onClick={handleNewEntrySubmit}>
+                    Add Distribution
+                  </button>
+                  </div>
+                                    
       <h2>Distribution List</h2>
       <table className="distribution-table">
         <thead>

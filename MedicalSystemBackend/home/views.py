@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+import requests
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Sum
@@ -36,12 +37,45 @@ class StudentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def search(self, request):
         """
-        Endpoint for live search functionality on students.
+        Searches for a student by roll number.
+        If not found, it calls an external API to fetch and store student data.
         """
-        query = request.query_params.get("query", "")
-        students = self.queryset.filter(roll_number__icontains=query)
-        serializer = StudentSearchSerializer(students, many=True)
-        return Response(serializer.data)
+        query = request.query_params.get("query", "").strip()
+
+        if not query:
+            return Response({"error": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the student exists in the local database
+        student = Student.objects.filter(roll_number=query).first()
+
+        if student:
+            serializer = StudentSearchSerializer(student)
+            return Response(serializer.data)
+
+        # If not found, call external API
+        api_url = "http://localhost/student"
+        try:
+            response = requests.post(api_url, json={"roll_number": query}, timeout=5)  # 5 sec timeout
+            if response.status_code == 200:
+                student_data = response.json()
+                
+                # Ensure required fields exist in API response
+                if not all(field in student_data for field in ["name", "roll_number"]):
+                    return Response({"error": "Invalid data from API"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Save student in local database
+                new_student = Student.objects.create(
+                    name=student_data["name"],
+                    roll_number=student_data["roll_number"],
+                )
+                
+                serializer = StudentSearchSerializer(new_student)
+                return Response(serializer.data)
+            else:
+                return Response({"error": "Student not found. Please enter a valid roll number."}, status=status.HTTP_404_NOT_FOUND)
+
+        except requests.RequestException as e:
+            return Response({"error": f"Failed to connect to student API: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class MedicineDistributionViewSet(viewsets.ModelViewSet):

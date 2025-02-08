@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-do
 import MedicineList from './components/MedicineList';
 import MedicineDistributionList from './components/MedicineDistributionList';
 const App = () => {
-  return (
+  return ( 
     <Router>
       <div style={mainContentStyles}>
         {/* Navigation Bar */}
