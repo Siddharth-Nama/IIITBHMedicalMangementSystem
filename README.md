@@ -1,8 +1,4 @@
-Here’s the updated `README.md` file with the **workflow** and **developed by** sections added:  
-
----
-
-# IIITBH Medical Management System
+# MediTrack - IIITBH Medical Management System
 
 ## Introduction
 The **IIITBH Medical Management System** is a robust and efficient platform designed specifically for the Medical Department at IIIT Bhagalpur. This system streamlines medical inventory management and medicine distribution to students, ensuring accurate record-keeping and efficient tracking of medicine usage.  
